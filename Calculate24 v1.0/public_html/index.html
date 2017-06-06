@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>算24</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('passButton')
+                        .addEventListener('click', passCards);
+                }
+              );
+      
+      
+            var testText = function(obj){
+                if (obj instanceof Object){
+                    obj = obj.join(':');
+                }
+                var $oldtext = document.getElementById('test').innerHTML;
+                document.getElementById('test').innerHTML = $oldtext + '<p>' + obj + '</p>';
+            };  
+            
+            var passCards = function(){
+                var $cardnum = document.getElementById('cardNum').value;
+                var $cardstag = '<ol>';
+                for (var i=1; i<=$cardnum; i++) {
+                    $cardstag =
+                            $cardstag + 
+                            "<li> <input class='cardtag' id='card_" +
+                            i.toString() +
+                            "' type='number'></li>";
+                };        
+                $cardstag += '</ol>';
+                $cardstag += "<button class='button' id='calButton'>计算</button>";
+                document.getElementById('cardStack').innerHTML = $cardstag;              
+                for (i=1; i<=$cardnum; i++){
+                    document.getElementById('card_' + i.toString()).value =  
+                            Math.floor(Math.random() * 13 + 1);
+                };         
+                document.getElementById('calButton')
+                        .addEventListener('click', cal24);
+            };
+            
+            var readOps = function(opnum){
+                var $opnum = opnum | 6;
+                var $ops = new Array();
+                var $oppair = new Array();
+                var $opchar = ['add', 'sub', 'mul', 'div', 'log', 'pow'];
+                var $oppriority = [0, 0, 1, 1, 2, 2];
+                for (var i=1; i<=$opnum; i++){
+                    if (document.getElementById($opchar[i-1]+'Check').checked===true){
+                        $oppair = [$opchar[i-1], $oppriority[i-1]];
+                        $ops.push($oppair);
+                    };
+                    
+                };
+                return($ops);
+            };
+            
+            var readCards = function(){
+                var $cardnum = document.getElementById('cardNum').value;
+                var $onecard = new Array();
+                var $cards = new Array();
+                for (var i=1; i<=$cardnum; i++){
+                   $onecard[0] = Number(document.getElementById('card_' + i.toString()).value);
+                   $onecard[1] = $onecard[0].toString();
+                   $onecard[2] = 4;
+                   $cards.push($onecard.slice());
+                };
+                return($cards);
+            };
+            
+            var add2num = function(num1, num2, op){
+                var $newnum = new Array();
+                var $string1 = num1[1];
+                var $string2 = num2[1];
+                $newnum[0] = num1[0] + num2[0];
+                $newnum[1] = $string1 + ' + ' + $string2;
+                $newnum[2] = op[1];
+                return($newnum.slice());
+            };
+            
+            var sub2num = function(num1, num2, op){
+                var $newnum = new Array();
+                var $string1 = num1[1];
+                var $string2 = num2[1];
+                if (num2[2] <= op[1]){
+                    $string2 = '(' + $string2 + ')';
+                };
+                $newnum[0] = num1[0] - num2[0];
+                $newnum[1] = $string1 + ' - ' + $string2;
+                $newnum[2] = op[1];
+                return($newnum.slice());
+            };
+            
+            var mul2num = function(num1, num2, op){
+                var $newnum = new Array();
+                var $string1 = num1[1];
+                var $string2 = num2[1];
+                if (num1[2] < op[1]){
+                    $string1 = '(' + $string1 + ')';
+                };
+                if (num2[2] < op[1]){
+                    $string2 = '(' + $string2 + ')';
+                };
+                $newnum[0] = num1[0] * num2[0];
+                $newnum[1] = $string1 + ' x ' + $string2;
+                $newnum[2] = op[1];
+                return($newnum.slice());
+            };
+            
+            var div2num = function(num1, num2, op){
+                var $newnum = new Array();
+                var $string1 = num1[1];
+                var $string2 = num2[1];
+                if (num1[2] < op[1]){
+                    $string1 = '(' + $string1 + ')';
+                };
+                if (num2[2] <= op[1]){
+                    $string2 = '(' + $string2 + ')';
+                };
+                $newnum[0] = num1[0] / num2[0];
+                $newnum[1] = $string1 + ' / ' + $string2;
+                $newnum[2] = op[1];
+                return($newnum.slice());
+            };
+            
+            var pow2num = function(num1, num2, op){
+                var $newnum = new Array();
+                var $string1 = num1[1];
+                var $string2 = num2[1];
+                if (num1[2] <= op[1]){
+                    $string1 = '(' + $string1 + ')';
+                };
+                if (num2[2] <= op[1]){
+                    $string2 = '(' + $string2 + ')';
+                };
+                $newnum[0] = Math.pow(num1[0], num2[0]);
+                $newnum[1] = $string1 + '<sup>' + $string2 + '</sup>';
+                $newnum[2] = op[1];
+                return($newnum.slice());
+            };
+            
+            var log2num = function(num1, num2, op){
+                var $newnum = new Array();
+                var $string1 = num1[1];
+                var $string2 = num2[1];
+                if (num1[2] <= op[1]){
+                    $string1 = '(' + $string1 + ')';
+                };
+                if (num2[2] <= op[1]){
+                    $string2 = '(' + $string2 + ')';
+                };
+                $newnum[0] = Math.log(num2[0])/Math.log(num1[0]);
+                $newnum[1] = 'log<sub>'+ $string1 + '</sub><sup>' + $string2 + '</sup>';
+                $newnum[2] = op[1];
+                return($newnum.slice());
+            };
+   
+            var oneStep = function(groups, ops){
+                var $newgroups = new Array();
+                var $group = new Array();
+                var $newgroup = new Array();
+                var $_newgroup = new Array();
+                var $num1, $num2;
+                for (var g=0;g<groups.length;g++){
+                    $group = groups[g].slice();
+                    for (var i=0;i<$group.length-1;i++){
+                        for (var j=i+1;j<$group.length;j++){
+                            $newgroup = $group.slice();
+                            $num2 = $newgroup.splice(j,1)[0];
+                            $num1 = $newgroup.splice(i,1)[0];
+                            for (var p=0;p<ops.length;p++){
+                                switch(ops[p][0]){
+                                    case 'add':
+                                        $_newgroup = $newgroup.slice();
+                                        $_newgroup.push(add2num($num1, $num2, ops[p]));
+                                        $newgroups.push($_newgroup.slice());
+                                        break;
+                                    case 'sub':
+                                        $_newgroup = $newgroup.slice();
+                                        $_newgroup.push(sub2num($num1, $num2, ops[p]));
+                                        $newgroups.push($_newgroup.slice());
+                                        if ($num1[0] !== $num2[0]){
+                                            $_newgroup = $newgroup.slice();
+                                            $_newgroup.push(sub2num($num2, $num1, ops[p]));
+                                            $newgroups.push($_newgroup.slice());
+                                        };
+                                        break;
+                                    case 'mul':
+                                        $_newgroup = $newgroup.slice();
+                                        $_newgroup.push(mul2num($num1, $num2, ops[p]));
+                                        $newgroups.push($_newgroup.slice());
+                                        break;
+                                    case 'div':
+                                        $_newgroup = $newgroup.slice();
+                                        $_newgroup.push(div2num($num1, $num2, ops[p]));
+                                        $newgroups.push($_newgroup.slice());
+                                        if ($num1[0] !== $num2[0]){
+                                            $_newgroup = $newgroup.slice();
+                                            $_newgroup.push(div2num($num2, $num1, ops[p]));
+                                            $newgroups.push($_newgroup.slice());
+                                        };
+                                        break;
+                                    case 'pow':
+                                        $_newgroup = $newgroup.slice();
+                                        $_newgroup.push(pow2num($num1, $num2, ops[p]));
+                                        $newgroups.push($_newgroup.slice());
+                                        if ($num1[0] !== $num2[0]){
+                                            $_newgroup = $newgroup.slice();
+                                            $_newgroup.push(pow2num($num2, $num1, ops[p]));
+                                            $newgroups.push($_newgroup.slice());
+                                        };
+                                        break;
+                                    case 'log':
+                                        $_newgroup = $newgroup.slice();
+                                        $_newgroup.push(log2num($num1, $num2, ops[p]));
+                                        $newgroups.push($_newgroup.slice());
+                                        if ($num1[0] !== $num2[0]){
+                                            $_newgroup = $newgroup.slice();
+                                            $_newgroup.push(log2num($num2, $num1, ops[p]));
+                                            $newgroups.push($_newgroup.slice());
+                                        };
+                                        break;
+                                };
+                            };
+                        };
+                    };
+                };
+                return($newgroups);
+            };
+                                
+
+            var cal24 = function(){
+                var $cards = readCards();
+                var $ops =readOps();
+                var $targetnum = document.getElementById('targetNum').value;
+                var $cardnum = document.getElementById('cardNum').value;
+                var $allgroups = new Array();
+                var $showed = new Array();
+                var $string;
+                var $count = 0;
+                document.getElementById('test').innerHTML = null;
+                $allgroups.push($cards);
+                for (var i=1;i<$cardnum;i++){
+                    $allgroups = oneStep($allgroups, $ops);  
+                };
+                for (i=0;i<$allgroups.length;i++){
+                    $string = $allgroups[i][0][1];
+                    if ($allgroups[i][0][0] == $targetnum && $showed.indexOf($string) === -1){  
+                        $count ++;
+                        $showed.push($string);
+                        testText($string + ' = ' + $allgroups[i][0][0]);
+                    };   
+                };   
+                if ($count==0){
+                    document.getElementById('test').innerHTML = "<h1 class='banner1'>算不出来!</h1>";
+                };
+            };
+        </script>
+        <style>
+            .banner1 {font-size: 16px;
+                      color: brown;}
+            .button {color: brown;
+                     font-size: 13px;}
+            .text1 {color: brown;
+                    font-size: 13px;}
+            #opDiv {padding: 6px;}
+        </style>
+    </head>
+    <body>
+        <div id='targetDiv'>
+            <h1 class='banner1'>目标数字?</h1>
+            <input id='targetNum' type='number' value='24'>
+        </div>
+        <div id='passDiv'>
+            <h1 class='banner1'>发几张牌?</h1>
+            <input id='cardNum' type='number' value='4' min='1' max='10'>
+            <button class='button' id='passButton'>发牌</button>
+        </div>
+        <div id='opDiv'>
+            <div>
+                <input type='checkbox' id='addCheck' checked='checked'>
+                <span class='text1'>加法</span>
+                <input type='checkbox' id='subCheck' checked='checked'>
+                <span class='text1'>减法</span>
+                <input type='checkbox' id='mulCheck' checked='checked'>
+                <span class='text1'>乘法</span>
+                <input type='checkbox' id='divCheck' checked='checked'>
+                <span class='text1'>除法</span>
+            </div>
+            <div>
+                <input type='checkbox' id='logCheck'>
+                <span class='text1'>对数</span>
+                <input type='checkbox' id='powCheck'>
+                <span class='text1'>乘方</span>
+            </div>
+            
+        </div>
+        <div id='cardStack'></div>
+        <div id='test'>
+            <h1 class='banner1'>计算结果:</h1>
+        </div>
+    </body>
+</html>
